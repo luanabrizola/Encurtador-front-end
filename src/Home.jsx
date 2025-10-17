@@ -4,7 +4,7 @@ import { FaLink, FaRegCalendar, FaRegClone, FaRegEdit, FaRegTrashAlt, FaChartBar
 function Home() {
     const [form, setForm] = useState({ legenda: "", url: "" });
     const [links, setLinks] = useState([]);
-    const API_URL = "http://localhost:3000";
+    const API_URL = "https://encurtador-back-end.onrender.com";
 
     useEffect(() => {
         fetch(`${API_URL}/links`)
