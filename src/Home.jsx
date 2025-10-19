@@ -6,6 +6,9 @@ function Home() {
     const [links, setLinks] = useState([]);
     const API_URL = "https://encurtador-back-end.onrender.com";
 
+    const [editId, setEditId] = useState(null);
+    const [editForm, setEditForm] = useState({ legenda: "", url: "" });
+
     useEffect(() => {
         fetch(`${API_URL}/links`)
             .then((res) => res.json())
@@ -67,6 +70,44 @@ function Home() {
         navigator.clipboard.writeText(urlCurta);
         alert("Link copiado!");
     };
+
+    const handleEditClick = (link) => {
+        setEditId(link.id);
+        setEditForm({ legenda: link.legenda, url: link.url });
+    };
+    
+    const handleEditSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            const response = await fetch(`${API_URL}/links/${editId}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(editForm),
+            });
+    
+            if (!response.ok) {
+                const result = await response.json();
+                alert(result.error || "Erro ao atualizar link");
+                return;
+            }
+    
+            const updatedLink = await response.json();
+    
+            setLinks((prevLinks) =>
+                prevLinks.map((link) => (link.id === editId ? updatedLink : link))
+            );
+    
+            setEditId(null);
+        } catch (error) {
+            console.error("Erro ao atualizar link:", error);
+            alert("Erro ao atualizar link.");
+        }
+    };
+    
+    const handleEditCancel = () => {
+        setEditId(null);
+    };
+
 
     return (
         <div className="flex flex-col items-center min-h-screen bg-gray-100 text-center p-4">
@@ -169,9 +210,50 @@ function Home() {
                                 <span>Copiar</span>
                             </button>
 
-                            <button className="w-[5%] bg-gray-100 border border-gray-300 rounded flex justify-center items-center">
-                                <FaRegEdit />
-                            </button>
+                             {editId === link.id ? (
+                                <form onSubmit={handleEditSubmit} className="flex flex-col space-y-2">
+                                    <input
+                                        type="text"
+                                        value={editForm.legenda}
+                                        onChange={(e) =>
+                                            setEditForm({ ...editForm, legenda: e.target.value })
+                                        }
+                                        className="border border-gray-300 rounded p-2"
+                                        required
+                                    />
+                                    <input
+                                        type="url"
+                                        value={editForm.url}
+                                        onChange={(e) =>
+                                            setEditForm({ ...editForm, url: e.target.value })
+                                        }
+                                        className="border border-gray-300 rounded p-2"
+                                        required
+                                    />
+                                    <div className="flex space-x-2">
+                                        <button
+                                            type="submit"
+                                            className="bg-green-500 text-white py-1 px-2 rounded"
+                                        >
+                                            Salvar
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className="bg-gray-300 py-1 px-2 rounded"
+                                            onClick={handleEditCancel}
+                                        >
+                                            Cancelar
+                                        </button>
+                                    </div>
+                                </form>
+                            ) : (
+                                <button
+                                    className="w-[5%] bg-gray-100 border border-gray-300 rounded flex justify-center items-center"
+                                    onClick={() => handleEditClick(link)}
+                                >
+                                    <FaRegEdit />
+                                </button>
+                            )}
 
                             <button
                                 className="w-[5%] bg-gray-100 border border-gray-300 rounded flex justify-center items-center"
