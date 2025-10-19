@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { FaLink, FaRegCalendar, FaRegClone, FaRegEdit, FaRegTrashAlt, FaChartBar, FaExternalLinkAlt } from "react-icons/fa";
+import { FaLink, FaRegCalendar, FaRegClone, FaRegEdit, FaRegTrashAlt, FaChartBar, FaExternalLinkAlt, FaWhatsapp, FaTelegramPlane, FaFacebookF, FaTwitter } from "react-icons/fa";
 
 function Home() {
     const [form, setForm] = useState({ legenda: "", url: "" });
@@ -9,18 +9,20 @@ function Home() {
     const [editId, setEditId] = useState(null);
     const [editForm, setEditForm] = useState({ legenda: "", url: "" });
 
+    const [openShare, setOpenShare] = useState(null);
+
     useEffect(() => {
         fetch(`${API_URL}/links`)
             .then((res) => res.json())
-            .then((data) => 
-                {if (Array.isArray(data)) {
-                setLinks(data);
-            } else if (Array.isArray(data.links)) {
-                setLinks(data.links);
-            } else {
-                setLinks([]);
-            }
-        })
+            .then((data) => {
+                if (Array.isArray(data)) {
+                    setLinks(data);
+                } else if (Array.isArray(data.links)) {
+                    setLinks(data.links);
+                } else {
+                    setLinks([]);
+                }
+            })
             .catch((err) => console.error("Erro ao buscar links:", err));
     }, []);
 
@@ -75,7 +77,7 @@ function Home() {
         setEditId(link.id);
         setEditForm({ legenda: link.legenda, url: link.url });
     };
-    
+
     const handleEditSubmit = async (e) => {
         e.preventDefault();
         try {
@@ -84,30 +86,55 @@ function Home() {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(editForm),
             });
-    
+
             if (!response.ok) {
                 const result = await response.json();
                 alert(result.error || "Erro ao atualizar link");
                 return;
             }
-    
+
             const updatedLink = await response.json();
-    
+
             setLinks((prevLinks) =>
                 prevLinks.map((link) => (link.id === editId ? updatedLink : link))
             );
-    
+
             setEditId(null);
         } catch (error) {
             console.error("Erro ao atualizar link:", error);
             alert("Erro ao atualizar link.");
         }
     };
-    
+
     const handleEditCancel = () => {
         setEditId(null);
     };
 
+    const handleShare = (link, plataforma) => {
+        const urlCurta = `${API_URL}/link/${link.codigo}`;
+
+        let shareURL = "";
+
+        switch (plataforma) {
+            case "whatsapp":
+                shareURL = `https://wa.me/?text=${encodeURIComponent(urlCurta)}`;
+                break;
+            case "telegram":
+                shareURL = `https://t.me/share/url?url=${encodeURIComponent(urlCurta)}`;
+                break;
+            case "facebook":
+                shareURL = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(urlCurta)}`;
+                break;
+            case "twitter":
+                shareURL = `https://twitter.com/intent/tweet?url=${encodeURIComponent(urlCurta)}`;
+                break;
+            default:
+                console.log("Plataforma não suportada");
+                return;
+        }
+
+        window.open(shareURL, "_blank");
+    };
 
     return (
         <div className="flex flex-col items-center min-h-screen bg-gray-100 text-center p-4">
@@ -173,7 +200,7 @@ function Home() {
                         className="bg-white border border-gray-300 rounded p-4"
                     >
                         <div className="flex justify-between">
-                            <p>{link.legenda}</p>
+                            <p className="font-bold">{link.legenda}</p>
                             <div className="text-gray-500 flex items-center space-x-1">
                                 <FaChartBar />
                                 <span>{link.visualizacoes ?? 0}</span>
@@ -181,11 +208,17 @@ function Home() {
                         </div>
 
                         <div className="text-blue-600 flex items-center space-x-1">
-                            <p>{`${API_URL}/link/${link.codigo}`}</p>
-                            <FaExternalLinkAlt />
+                            <a
+                                href={`${API_URL}/link/${link.codigo}`}
+                                target="_blank"
+                                className="flex items-center space-x-1"
+                            >
+                                <span>{`${API_URL}/link/${link.codigo}`}</span>
+                                <FaExternalLinkAlt />
+                            </a>
                         </div>
 
-                        <p className="text-gray-500 break-all">
+                        <p className="text-gray-500 break-all justify-self-start">
                             {link.url}
                         </p>
 
@@ -201,16 +234,54 @@ function Home() {
 
                         <hr className="border-0 h-px bg-gray-300 my-4" />
 
-                        <div className="flex justify-between">
+                        <div className="flex justify-between h-[40px]">
                             <button
-                                className="w-[88%] bg-gray-100 border border-gray-300 rounded flex justify-center items-center space-x-2"
+                                className="w-[75%] bg-gray-100 border border-gray-300 rounded flex justify-center items-center space-x-2 cursor-pointer"
                                 onClick={() => handleCopy(link.codigo)}
                             >
                                 <FaRegClone />
                                 <span>Copiar</span>
                             </button>
 
-                             {editId === link.id ? (
+                            <div className="flex flex-col relative w-[12%] h-[40px]">
+                                <button
+                                    className="w-full bg-gray-100 border border-gray-300 rounded flex justify-center items-center space-x-2 cursor-pointer h-full"
+                                    onClick={() => setOpenShare(openShare === link.id ? null : link.id)}
+                                >
+                                    <span>Compartilhar</span>
+                                </button>
+
+                                {openShare === link.id && (
+                                    <div className="absolute top-full w-full mt-2 bg-white border border-gray-300 rounded shadow-lg z-10">
+                                        <button
+                                            className="flex items-center space-x-2 px-3 py-2 hover:bg-gray-200 w-full cursor-pointer"
+                                            onClick={() => handleShare(link, "whatsapp")}
+                                        >
+                                            <FaWhatsapp /> <span>WhatsApp</span>
+                                        </button>
+                                        <button
+                                            className="flex items-center space-x-2 px-3 py-2 hover:bg-gray-200 w-full cursor-pointer"
+                                            onClick={() => handleShare(link, "telegram")}
+                                        >
+                                            <FaTelegramPlane /> <span>Telegram</span>
+                                        </button>
+                                        <button
+                                            className="flex items-center space-x-2 px-3 py-2 hover:bg-gray-200 w-full cursor-pointer"
+                                            onClick={() => handleShare(link, "facebook")}
+                                        >
+                                            <FaFacebookF /> <span>Facebook</span>
+                                        </button>
+                                        <button
+                                            className="flex items-center space-x-2 px-3 py-2 hover:bg-gray-200 w-full cursor-pointer"
+                                            onClick={() => handleShare(link, "twitter")}
+                                        >
+                                            <FaTwitter /> <span>Twitter</span>
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+
+                            {editId === link.id ? (
                                 <form onSubmit={handleEditSubmit} className="flex flex-col space-y-2">
                                     <input
                                         type="text"
@@ -248,7 +319,7 @@ function Home() {
                                 </form>
                             ) : (
                                 <button
-                                    className="w-[5%] bg-gray-100 border border-gray-300 rounded flex justify-center items-center"
+                                    className="w-[5%] bg-gray-100 border border-gray-300 rounded flex justify-center items-center cursor-pointer"
                                     onClick={() => handleEditClick(link)}
                                 >
                                     <FaRegEdit />
@@ -256,7 +327,7 @@ function Home() {
                             )}
 
                             <button
-                                className="w-[5%] bg-gray-100 border border-gray-300 rounded flex justify-center items-center"
+                                className="w-[5%] bg-gray-100 border border-gray-300 rounded flex justify-center items-center cursor-pointer"
                                 onClick={() => handleDelete(link.id)}
                             >
                                 <FaRegTrashAlt />
