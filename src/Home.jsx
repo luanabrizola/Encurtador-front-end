@@ -9,7 +9,15 @@ function Home() {
     useEffect(() => {
         fetch(`${API_URL}/links`)
             .then((res) => res.json())
-            .then((data) => setLinks(data))
+            .then((data) => 
+                {if (Array.isArray(data)) {
+                setLinks(data);
+            } else if (Array.isArray(data.links)) {
+                setLinks(data.links);
+            } else {
+                setLinks([]);
+            }
+        })
             .catch((err) => console.error("Erro ao buscar links:", err));
     }, []);
 
