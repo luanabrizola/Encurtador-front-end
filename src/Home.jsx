@@ -4,7 +4,9 @@ import { FaLink, FaRegCalendar, FaRegClone, FaRegEdit, FaRegTrashAlt, FaChartBar
 function Home() {
     const [form, setForm] = useState({ legenda: "", url: "" });
     const [links, setLinks] = useState([]);
-    const API_URL = "https://encurtador-back-endd.onrender.com/";
+    // Prefer using env var VITE_API_URL; fallback para a URL pública sem barra final
+    const API_URL = import.meta.env.VITE_API_URL || "https://encurtador-back-end.onrender.com";
+    const base = (path) => `${API_URL}${path.startsWith("/") ? "" : "/"}${path}`;
 
     const [editId, setEditId] = useState(null);
     const [editForm, setEditForm] = useState({ legenda: "", url: "" });
@@ -12,7 +14,7 @@ function Home() {
     const [openShare, setOpenShare] = useState(null);
 
     useEffect(() => {
-        fetch(`${API_URL}/links`)
+    fetch(base("/links"))
             .then((res) => res.json())
             .then((data) => {
                 if (Array.isArray(data)) {
@@ -29,7 +31,7 @@ function Home() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await fetch(`${API_URL}/links`, {
+            const response = await fetch(base("/links"), {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(form),
@@ -53,7 +55,7 @@ function Home() {
     const handleDelete = async (id) => {
         if (!window.confirm("Deseja realmente excluir este link?")) return;
         try {
-            const response = await fetch(`${API_URL}/links/${id}`, { method: "DELETE" });
+            const response = await fetch(base(`/links/${id}`), { method: "DELETE" });
 
             if (!response.ok) {
                 throw new Error("Erro ao excluir link.");
@@ -69,7 +71,7 @@ function Home() {
     };
 
     const handleCopy = async (codigo) => {
-        const urlCurta = `${API_URL}/link/${codigo}`;
+    const urlCurta = base(`/link/${codigo}`);
         try {
             await navigator.clipboard.writeText(urlCurta);
             alert("Link copiado!");
@@ -87,7 +89,7 @@ function Home() {
     const handleEditSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await fetch(`${API_URL}/links/${editId}`, {
+            const response = await fetch(base(`/links/${editId}`), {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(editForm),
@@ -117,7 +119,7 @@ function Home() {
     };
 
     const handleShare = (link, plataforma) => {
-        const urlCurta = `${API_URL}/link/${link.codigo}`;
+    const urlCurta = base(`/link/${link.codigo}`);
 
         let shareURL = "";
 
