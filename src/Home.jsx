@@ -4,7 +4,7 @@ import { FaLink, FaRegCalendar, FaRegClone, FaRegEdit, FaRegTrashAlt, FaChartBar
 function Home() {
     const [form, setForm] = useState({ legenda: "", url: "" });
     const [links, setLinks] = useState([]);
-    const API_URL = "https://encurtador-back-end.onrender.com";
+    const API_URL = "https://encurtador-back-endd.onrender.com/";
 
     const [editId, setEditId] = useState(null);
     const [editForm, setEditForm] = useState({ legenda: "", url: "" });
@@ -42,7 +42,8 @@ function Home() {
                 return;
             }
 
-            setLinks([...links, result.link]);
+            const created = result.link || result;
+            setLinks([...links, created]);
             setForm({ legenda: "", url: "" });
         } catch (error) {
             console.error("Erro ao criar link:", error);
@@ -67,10 +68,15 @@ function Home() {
 
     };
 
-    const handleCopy = (codigo) => {
+    const handleCopy = async (codigo) => {
         const urlCurta = `${API_URL}/link/${codigo}`;
-        navigator.clipboard.writeText(urlCurta);
-        alert("Link copiado!");
+        try {
+            await navigator.clipboard.writeText(urlCurta);
+            alert("Link copiado!");
+        } catch (err) {
+            console.error("Erro ao copiar para a área de transferência:", err);
+            alert("Não foi possível copiar o link. Copie manualmente:");
+        }
     };
 
     const handleEditClick = (link) => {
@@ -235,9 +241,10 @@ function Home() {
                         <hr className="border-0 h-px bg-gray-300 my-4" />
 
                         <div className="flex justify-between h-[40px]">
-                            <button
+                                <button
                                 className="w-[75%] bg-gray-100 border border-gray-300 rounded flex justify-center items-center space-x-2 cursor-pointer"
-                                onClick={() => handleCopy(link.codigo)}
+                                    type="button"
+                                    onClick={() => handleCopy(link.codigo)}
                             >
                                 <FaRegClone />
                                 <span>Copiar</span>
@@ -246,6 +253,7 @@ function Home() {
                             <div className="flex flex-col relative w-[12%] h-[40px]">
                                 <button
                                     className="w-full bg-gray-100 border border-gray-300 rounded flex justify-center items-center space-x-2 cursor-pointer h-full"
+                                    type="button"
                                     onClick={() => setOpenShare(openShare === link.id ? null : link.id)}
                                 >
                                     <span>Compartilhar</span>
@@ -255,24 +263,28 @@ function Home() {
                                     <div className="absolute top-full w-full mt-2 bg-white border border-gray-300 rounded shadow-lg z-10">
                                         <button
                                             className="flex items-center space-x-2 px-3 py-2 hover:bg-gray-200 w-full cursor-pointer"
+                                            type="button"
                                             onClick={() => handleShare(link, "whatsapp")}
                                         >
                                             <FaWhatsapp /> <span>WhatsApp</span>
                                         </button>
                                         <button
                                             className="flex items-center space-x-2 px-3 py-2 hover:bg-gray-200 w-full cursor-pointer"
+                                            type="button"
                                             onClick={() => handleShare(link, "telegram")}
                                         >
                                             <FaTelegramPlane /> <span>Telegram</span>
                                         </button>
                                         <button
                                             className="flex items-center space-x-2 px-3 py-2 hover:bg-gray-200 w-full cursor-pointer"
+                                            type="button"
                                             onClick={() => handleShare(link, "facebook")}
                                         >
                                             <FaFacebookF /> <span>Facebook</span>
                                         </button>
                                         <button
                                             className="flex items-center space-x-2 px-3 py-2 hover:bg-gray-200 w-full cursor-pointer"
+                                            type="button"
                                             onClick={() => handleShare(link, "twitter")}
                                         >
                                             <FaTwitter /> <span>Twitter</span>
@@ -320,6 +332,7 @@ function Home() {
                             ) : (
                                 <button
                                     className="w-[5%] bg-gray-100 border border-gray-300 rounded flex justify-center items-center cursor-pointer"
+                                    type="button"
                                     onClick={() => handleEditClick(link)}
                                 >
                                     <FaRegEdit />
@@ -328,6 +341,7 @@ function Home() {
 
                             <button
                                 className="w-[5%] bg-gray-100 border border-gray-300 rounded flex justify-center items-center cursor-pointer"
+                                type="button"
                                 onClick={() => handleDelete(link.id)}
                             >
                                 <FaRegTrashAlt />
