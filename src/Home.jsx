@@ -226,7 +226,7 @@ function Home() {
                             </a>
                         </div>
 
-                        <p className="text-gray-500 break-all justify-self-start">
+                        <p className="text-gray-500 break-all text-left">
                             {link.url}
                         </p>
 
