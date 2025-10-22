@@ -14,7 +14,7 @@ function Home() {
     const [openShare, setOpenShare] = useState(null);
 
     useEffect(() => {
-    fetch(base("/links"))
+        fetch(base("/links"))
             .then((res) => res.json())
             .then((data) => {
                 if (Array.isArray(data)) {
@@ -71,7 +71,7 @@ function Home() {
     };
 
     const handleCopy = async (codigo) => {
-    const urlCurta = base(`/link/${codigo}`);
+        const urlCurta = base(`/link/${codigo}`);
         try {
             await navigator.clipboard.writeText(urlCurta);
             alert("Link copiado!");
@@ -119,7 +119,7 @@ function Home() {
     };
 
     const handleShare = (link, plataforma) => {
-    const urlCurta = base(`/link/${link.codigo}`);
+        const urlCurta = base(`/link/${link.codigo}`);
 
         let shareURL = "";
 
@@ -235,7 +235,10 @@ function Home() {
                             <span>
                                 Criado em{" "}
                                 {link.criado_em
-                                    ? new Date(link.criado_em).toLocaleString("pt-BR")
+                                    ? new Date(link.criado_em).toLocaleString("pt-BR", {
+                                        dateStyle: "short",
+                                        timeStyle: "short",
+                                    })
                                     : "—"}
                             </span>
                         </div>
@@ -243,10 +246,10 @@ function Home() {
                         <hr className="border-0 h-px bg-gray-300 my-4" />
 
                         <div className="flex justify-between h-[40px]">
-                                <button
+                            <button
                                 className="w-[75%] bg-gray-100 border border-gray-300 rounded flex justify-center items-center space-x-2 cursor-pointer"
-                                    type="button"
-                                    onClick={() => handleCopy(link.codigo)}
+                                type="button"
+                                onClick={() => handleCopy(link.codigo)}
                             >
                                 <FaRegClone />
                                 <span>Copiar</span>
