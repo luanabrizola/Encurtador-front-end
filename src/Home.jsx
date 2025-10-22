@@ -5,7 +5,7 @@ function Home() {
     const [form, setForm] = useState({ legenda: "", url: "" });
     const [links, setLinks] = useState([]);
     // Prefer using env var VITE_API_URL; fallback para a URL pública sem barra final
-    const API_URL = import.meta.env.VITE_API_URL || "https://encurtador-back-end.onrender.com";
+    const API_URL = import.meta.env.VITE_API_URL || "https://encurtador-back-endd.onrender.com";
     const base = (path) => `${API_URL}${path.startsWith("/") ? "" : "/"}${path}`;
 
     const [editId, setEditId] = useState(null);
